@@ -4,6 +4,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import java.io.IOException;
+import java.sql.SQLException;
 
 /**
  * Handles user-related endpoints like login and registration.
@@ -15,25 +16,30 @@ public class UserController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getPathInfo();
-        if ("/login".equals(action)) {
-            String tckn = request.getParameter("tckn");
-            String password = request.getParameter("password");
-            try {
-                boolean success = userService.loginUser(tckn, password);
-                response.getWriter().println(success ? "Login successful" : "Invalid credentials");
-            } catch (Exception e) {
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error during login.");
+
+        try {
+            if ("/login".equals(action)) {
+                String tckn = request.getParameter("tckn");
+                String password = request.getParameter("password");
+                String role = userService.loginUser(tckn, password);
+
+                if (role != null) {
+                    HttpSession session = request.getSession();
+                    session.setAttribute("role", role);
+                    response.getWriter().println("Login successful as " + role + ".");
+                } else {
+                    response.getWriter().println("Invalid credentials.");
+                }
+            } else if ("/register".equals(action)) {
+                String fullName = request.getParameter("fullName");
+                String tckn = request.getParameter("tckn");
+                String password = request.getParameter("password");
+                String role = request.getParameter("role");
+                userService.registerUser(fullName, tckn, password, role);
+                response.getWriter().println("Registration successful.");
             }
-        } else if ("/register".equals(action)) {
-            String fullName = request.getParameter("fullName");
-            String tckn = request.getParameter("tckn");
-            String password = request.getParameter("password");
-            try {
-                userService.registerUser(fullName, tckn, password);
-                response.getWriter().println("Registration successful");
-            } catch (Exception e) {
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error during registration.");
-            }
+        } catch (SQLException e) {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error: " + e.getMessage());
         }
     }
 }

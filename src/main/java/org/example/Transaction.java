@@ -11,13 +11,15 @@ public class Transaction {
     private int receiverId;
     private double amount;
     private Timestamp dateTime;
+    private String status;
 
-    public Transaction(int transactionId, int senderId, int receiverId, double amount, Timestamp dateTime) {
+    public Transaction(int transactionId, int senderId, int receiverId, double amount, Timestamp dateTime, String status) {
         this.transactionId = transactionId;
         this.senderId = senderId;
         this.receiverId = receiverId;
         this.amount = amount;
         this.dateTime = dateTime;
+        this.status = status;
     }
 
     // Getters and Setters
@@ -59,5 +61,13 @@ public class Transaction {
 
     public void setDateTime(Timestamp dateTime) {
         this.dateTime = dateTime;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }
